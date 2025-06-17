@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  postgres-gateway:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: gateway
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_HOST: postgres-gateway
+      POSTGRES_PORT: 5432
+    ports:
+      - 65432:5432
+    volumes:
+      - ./volumes/postgresql/dumps:/var/lib/postgresql/dumps
+      - ./volumes/postgresql/data:/var/lib/postgresql/data
+      - ./volumes/init.sh:/docker-entrypoint-initdb.d/init.sh
+
+  redis-gateway:
+    image: redis:latest
+    restart: always
+    ports:
+      - 6391:6379
+    environment:
+      REDIS_PASSWORD: secret
+      REDIS_PORT: 6385
+    volumes:
+      - ./volumes/redis/data:/data
+
+  rabbitmq-gateway:
+    image: rabbitmq:3-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: secret
+    ports:
+      - 5673:5672
+      - 15673:15672
+    volumes:
+      - ./volumes/rabbitmq/data:/var/lib/rabbitmq
+
+  zookeeper-gateway:
+    image: bitnami/zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2182
+      ZOOKEEPER_TICK_TIME: 2000
+      ALLOW_ANONYMOUS_LOGIN: 'yes'
+    ports:
+      - 2183:2182
+    restart: always
